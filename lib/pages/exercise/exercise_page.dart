@@ -3,12 +3,14 @@ import 'dart:html';
 import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:neuron_word/components/drawer.dart';
 import 'package:neuron_word/components/webcam_viewer.dart';
 import 'package:neuron_word/controller/auth.dart';
 import 'package:neuron_word/controller/hardware/audio_player.dart';
+import 'package:neuron_word/controller/hardware/display.dart';
 import 'package:neuron_word/controller/hardware/webcam_recorder.dart';
 import 'package:neuron_word/controller/network.dart';
 import 'package:neuron_word/entity/exercise/exercise_data.dart';
@@ -75,9 +77,11 @@ class _ExercisePageState extends State<ExercisePage> {
     super.initState();
     webAudioPlayer  = WebAudioPlayer();
     webcamRecorder  = WebcamRecorder();
-
+    vh = Display.vh;
+    vw = Display.vw;
     _exerciseProvider = Provider.of<ExerciseProvider>(context, listen: false);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await Auth.getUser();
       setState(() {
         _userName = "${Auth.user?.name} ${Auth.user?.surname}";
         webcamViewer = WebcamViewer(webcamKey: webcamKey, onStreamAvailable: (stream, webcamVideoElement) {
@@ -86,6 +90,9 @@ class _ExercisePageState extends State<ExercisePage> {
             _isBusy = false;
           });
           webcamRecorder.init(stream, webcamVideoElement);
+          //avvio il video
+          if(webcamVideoElement.srcObject.active)
+            webcamVideoElement.play();
         },
           width: vw * 100,
           height: vh * 100,
@@ -124,9 +131,6 @@ class _ExercisePageState extends State<ExercisePage> {
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-    vh = size.height/100;
-    vw = size.width/100;
     Widget result = Container();
     String titleText = "Benvenuto\nPremi il tasto play per iniziare";
     Color textColor = Colors.white;
@@ -154,7 +158,7 @@ class _ExercisePageState extends State<ExercisePage> {
             titleText = "Fine della sessione\nPremi il tasto in basso per\niniziarne una nuova";
             result = getButton(newSession, Icons.replay);
           }else {
-            titleText = "Prossimo esercizio:\n${exercises[step].type}";
+            titleText = "${exercises[step].type}";
             result = getButton(startExercise, Icons.play_arrow);
           }
           break;
@@ -170,14 +174,14 @@ class _ExercisePageState extends State<ExercisePage> {
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
         title: Text(_userName),
-        actions: [
+        /*actions: [
           RaisedButton(
             child: Text("Abort"),
             onPressed: () {
               abort();
             },
           )
-        ],
+        ],*/
       ),
       drawer: MyDrawer.build(context),
       body: Center(
@@ -188,31 +192,31 @@ class _ExercisePageState extends State<ExercisePage> {
             fit: StackFit.loose,
             children: [
               Positioned(
-                top: -50,
+                top: 0,
                 left: 0,
-                width: 100 * vw + 50,
-                height: 100 * vh + 200,
-                child: webcamViewer
+                width: 100 * vw,
+                height: 100 * vh,
+                child: webcamViewer ?? Container()
               ),
               Positioned(
-                bottom:  showComponent ? vh * 100 - 178 : vh * 50 - 16,
-                child: Text(titleText, style: TextStyle(fontSize: 32, color: textColor), textAlign: TextAlign.center,),
-              ),
-              if(showComponent)
-                Positioned(
-                  top:300,
-                  width: vw*80,
-                  //color: Colors.redAccent,
-                  child: Column(
-                      children: [
-                        Text(exercises[step].text, style: TextStyle(fontSize: 32, color: textColor), textAlign: TextAlign.center,),
-                        Spacer(flex: 1,),
-                        Text(exercises[step].hint ?? "", style: TextStyle(fontSize: 32, color: textColor), textAlign: TextAlign.center,),
+                top:  150,
+                height: vh * 100 - 350,
+                width: vw * 80,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Text(titleText, style: TextStyle(fontSize: 32, color: textColor), textAlign: TextAlign.center,),
+                    if(showComponent)
+                      ...[
                         Spacer(flex: 2,),
+                        Text(exercises[step]?.text ?? "", style: TextStyle(fontSize: 32, color: textColor), textAlign: TextAlign.center,),
+                        Spacer(flex: 1,),
+                        Text(exercises[step]?.hint ?? "", style: TextStyle(fontSize: 32, color: textColor), textAlign: TextAlign.center,),
+                        Spacer(flex: 5,),
                       ]
-                  ),
-                ),
-
+                  ],
+                )
+              ),
               Positioned(
                 bottom: 0,
                 child: Container(
@@ -506,7 +510,7 @@ class _ExercisePageState extends State<ExercisePage> {
 
   getDebug() {
     return Positioned(
-        top: 150,
+        top: 50,
         left: 10,
         child: Container(
             width: vw*100,

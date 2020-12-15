@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_brand_icons/flutter_brand_icons.dart';
+import 'package:neuron_word/controller/auth.dart';
+import 'package:neuron_word/controller/hardware/display.dart';
 import 'package:neuron_word/pages/routes.dart';
 
 class LoginPage extends StatefulWidget {
@@ -30,15 +32,13 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
-    double vh = size.height/100;
-    double vw = size.width/100;
+    Display.updateSize(size: MediaQuery.of(context).size);
     return Scaffold(
       body: Center(
         child: Padding(
           padding: const EdgeInsets.only(top: 10.0),
           child: Container(
-            width: vw * 80,
+            width: Display.vw * 80,
             child: Column(
               children: [
                 Form(
@@ -189,11 +189,20 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  _navigate(){
-    Navigator.pushReplacementNamed(
+  _navigate() async {
+    await Auth.getUser();
+    print(["USER", Auth.user]);
+    if(Auth.user.name == null){
+      Navigator.pushNamed(
+        context,
+        Routes.ContinueRegistration
+      );
+    }else {
+      Navigator.pushReplacementNamed(
         context,
         Routes.Exercise,
-    );
+      );
+    }
   }
 
   _navigateToVerificationPage(){

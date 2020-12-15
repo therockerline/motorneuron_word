@@ -38,15 +38,11 @@ class WebcamRecorder{
       switch(event){
         case WebcamEvent.startRec:
           if(webcamVideoElement.srcObject.active) {
-            webcamVideoElement.play();
-            webcamVideoElement.hidden = false;
             _videoRecorder.start();
           }
           break;
         case WebcamEvent.stopRec:
           print(_videoRecorder.state);
-          webcamVideoElement.hidden = true;
-          webcamVideoElement.pause();
           if(_videoRecorder.state !='inactive') {
             _videoRecorder.stop();
           }

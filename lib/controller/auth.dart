@@ -13,11 +13,17 @@ class Auth {
           print('Init auth - User is currently signed out!');
         } else {
           print('Init auth - User is signed in!');
-          Auth.user = await UserProvider.getUserData(user);
+          await Auth.getUser(user: user);
         }
       });
       Auth.instance = this;
     }
+  }
+
+  static Future<void> getUser({User user}) async {
+    if(user == null)
+      user = FirebaseAuth.instance.currentUser;
+    Auth.user = await UserProvider.getUserData(user);
   }
 
 }

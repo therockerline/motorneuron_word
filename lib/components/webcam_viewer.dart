@@ -36,7 +36,7 @@ class _WebcamViewerState extends State<WebcamViewer> {
     //Create video widget
     webcamWidget = HtmlElementView(key: widget.webcamKey, viewType: 'webcamVideoElement');
     var videoOption = {
-      "facingMode": 'user',
+      //"facingMode": 'user',
       "width": widget.width ?? 1280,
       "height": widget.height ?? 720,
     };

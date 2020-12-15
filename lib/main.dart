@@ -7,6 +7,7 @@ import 'package:neuron_word/pages/login/login_page.dart';
 import 'package:neuron_word/pages/routes.dart';
 import 'package:provider/provider.dart';
 
+import 'controller/hardware/display.dart';
 import 'controller/network.dart';
 
 Future<void> main() async {
@@ -43,8 +44,10 @@ class App extends StatelessWidget {
               primarySwatch: Colors.blue,
             ),
             routes: Routes.getRoutes(),
+            //initialRoute: Routes.Login,
             onGenerateRoute: Routes.onGenerateRoute,
-            home: LoginPage(),
+
+            //home: LoginPage(),
           );
         }
         return CircularProgressIndicator();
