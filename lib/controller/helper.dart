@@ -4,7 +4,8 @@ enum RegexTypes {
   alphanumeric,
   numerical,
   alphabetical,
-  symbols
+  symbols,
+  email
 }
 
 //regex
@@ -12,10 +13,11 @@ final RegExp _alphanumerical = RegExp(r"^[a-zA-Z0-9]*$");
 final RegExp _numerical = RegExp(r"^([0-9]*)$");
 final RegExp _alphabetical = RegExp(r"^[a-zA-Z]*$");
 final RegExp _symbols = RegExp(r'/[$-/:-?{-~!"^_`\[\]]/');
+final RegExp _email = RegExp(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$");
 
 class FieldController{
   TextEditingController controller = TextEditingController();
-  String errorMessage = "";
+  String errorMessage;
   String Function(String) validator;
   int _maxLength;
   int _minLength;
@@ -79,8 +81,13 @@ class FieldController{
             return "Solo i caratteri simbolici sono consentiti";
         // TODO: Handle this case.
           break;
+        case RegexTypes.email:
+          // TODO: Handle this case.
+          if(!_email.hasMatch(value))
+            return "L'email inserita non è corretta";
+          break;
+        default: throw("Unhandled regexType");
       }
-      throw("Unhandled regexType");
   }
 
 }

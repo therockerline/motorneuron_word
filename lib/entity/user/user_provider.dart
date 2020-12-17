@@ -17,7 +17,7 @@ class UserProvider {
   static Future<UserData> addUserData(UserData user) {
     return Database.users.add(user.toJson()).then((value) {
       if(value != null){
-        user.id = value.id;
+        print(value.toString());
         return user;
       }
       return null;

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_brand_icons/flutter_brand_icons.dart';
 import 'package:neuron_word/controller/auth.dart';
 import 'package:neuron_word/controller/hardware/display.dart';
+import 'package:neuron_word/controller/helper.dart';
 import 'package:neuron_word/pages/routes.dart';
 
 class LoginPage extends StatefulWidget {
@@ -15,8 +16,9 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _pswController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  final FieldController _emailController = FieldController.build(maxLength: 100,regexType: RegexTypes.email);
+  final FieldController _pswController = FieldController.build(maxLength: 30, minLength: 4);
 
   String messageError;
   @override
@@ -42,21 +44,26 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               children: [
                 Form(
+                  key: _formKey,
                   child: FocusScope(
                     node: FocusScopeNode(),
                     child: Column(
                       children: [
                         TextFormField(
-                          controller: _emailController,
+                          controller: _emailController.controller,
+                          validator: _emailController.validator,
                           decoration: InputDecoration(
-                              labelText: 'Email'
+                            labelText: 'Email',
+                            errorText: _emailController.errorMessage
                           ),
                         ),
                         TextFormField(
-                          controller: _pswController,
+                          controller: _pswController.controller,
+                          validator: _pswController.validator,
                           obscureText: true,
                           decoration: InputDecoration(
-                              labelText: 'Password'
+                            labelText: 'Password',
+                            errorText: _pswController.errorMessage
                           ),
                         ),
                       ],
@@ -135,9 +142,10 @@ class _LoginPageState extends State<LoginPage> {
 
   _registration() async {
     try {
+      _validate();
       await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: _emailController.value.text,
-          password: _pswController.value.text
+          email: _emailController.value,
+          password: _pswController.value
       );
       User user = FirebaseAuth.instance.currentUser;
       await user.sendEmailVerification();
@@ -146,12 +154,12 @@ class _LoginPageState extends State<LoginPage> {
       if (e.code == 'weak-password') {
         print('The password provided is too weak.');
         setState(() {
-          messageError = 'The password provided is too weak.';
+          _pswController.errorMessage = 'The password provided is too weak.';
         });
       } else if (e.code == 'email-already-in-use') {
         print('The account already exists for that email.');
         setState(() {
-          messageError = 'The account already exists for that email.';
+          _emailController.errorMessage = 'The account already exists for that email.';
         });
       }
     } catch (e) {
@@ -164,9 +172,10 @@ class _LoginPageState extends State<LoginPage> {
 
   _login() async {
     try {
+      _validate();
       await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: _emailController.value.text,
-          password: _pswController.value.text
+          email: _emailController.value,
+          password: _pswController.value
       );
       User user = FirebaseAuth.instance.currentUser;
       if (!user.emailVerified) {
@@ -178,12 +187,12 @@ class _LoginPageState extends State<LoginPage> {
       if (e.code == 'user-not-found') {
         print('No user found for that email.');
         setState(() {
-          messageError = 'No user found for that email.';
+          _emailController.errorMessage = 'No user found for that email.';
         });
       } else if (e.code == 'wrong-password') {
         print('Wrong password provided for that user.');
         setState(() {
-          messageError = 'Wrong password provided for that user.';
+          _pswController.errorMessage = 'Wrong password provided for that user.';
         });
       }
     }
@@ -210,6 +219,18 @@ class _LoginPageState extends State<LoginPage> {
         context,
         Routes.Verification,
     );
+  }
+
+  void _validate(){
+    setState(() {
+      messageError = null;
+      _pswController.errorMessage = null;
+      _emailController.errorMessage = null;
+    });
+    bool isValid = _formKey.currentState.validate();
+    if(!isValid) {
+      throw("Error on validation");
+    }
   }
 
 }
