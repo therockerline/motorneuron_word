@@ -7,6 +7,12 @@ enum RegexTypes {
   symbols
 }
 
+//regex
+final RegExp _alphanumerical = RegExp(r"^[a-zA-Z0-9]*$");
+final RegExp _numerical = RegExp(r"^([0-9]*)$");
+final RegExp _alphabetical = RegExp(r"^[a-zA-Z]*$");
+final RegExp _symbols = RegExp(r'/[$-/:-?{-~!"^_`\[\]]/');
+
 class FieldController{
   TextEditingController controller = TextEditingController();
   String errorMessage = "";
@@ -15,13 +21,6 @@ class FieldController{
   int _minLength;
 
   String get value => controller.value.text;
-
-
-  //regex
-  final RegExp _alphanumerical = RegExp(r"^[a-zA-Z0-9]*$");
-  final RegExp _numerical = RegExp(r"^([0-9]*)$");
-  final RegExp _alphabetical = RegExp(r"^[a-zA-Z]*$");
-  final RegExp _symbols = RegExp(r'/[$-/:-?{-~!"^_`\[\]]/');
 
   FieldController(this.validator, {int maxLength, int minLength}){
     this._maxLength = maxLength;
@@ -58,7 +57,7 @@ class FieldController{
     );
   }
   
-  String _evaluateRegex(RegexTypes regexType, String value){
+  static String _evaluateRegex(RegexTypes regexType, String value){
       switch(regexType){
         case RegexTypes.alphanumeric:
           if(!_alphanumerical.hasMatch(value))
