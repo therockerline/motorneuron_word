@@ -13,4 +13,14 @@ class UserProvider {
       return null;
     });
   }
+
+  static Future<UserData> addUserData(UserData user) {
+    return Database.users.add(user.toJson()).then((value) {
+      if(value != null){
+        user.id = value.id;
+        return user;
+      }
+      return null;
+    });
+  }
 }

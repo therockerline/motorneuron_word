@@ -212,10 +212,4 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  _navigateToContinueRegistrationPage(){
-    Navigator.pushNamed(
-      context,
-      Routes.Verification,
-    );
-  }
 }
