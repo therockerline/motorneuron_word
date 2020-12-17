@@ -24,6 +24,7 @@ class Auth {
     if(user == null)
       user = FirebaseAuth.instance.currentUser;
     Auth.user = await UserProvider.getUserData(user);
+
   }
 
 }

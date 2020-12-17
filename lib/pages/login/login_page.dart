@@ -192,7 +192,7 @@ class _LoginPageState extends State<LoginPage> {
   _navigate() async {
     await Auth.getUser();
     print(["USER", Auth.user]);
-    if(Auth.user.name == null){
+    if(Auth.user?.name == null){
       Navigator.pushNamed(
         context,
         Routes.ContinueRegistration
