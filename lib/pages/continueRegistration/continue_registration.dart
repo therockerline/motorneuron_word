@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:neuron_word/components/form_field_widget.dart';
 import 'package:neuron_word/controller/auth.dart';
 import 'package:neuron_word/controller/hardware/display.dart';
 import 'package:neuron_word/controller/helper.dart';
@@ -36,7 +37,7 @@ class _ContinueRegistrationPageState extends State<ContinueRegistrationPage> {
 
   @override
   Widget build(BuildContext context) {
-    Display.updateSize(size: MediaQuery.of(context).size);
+    Display.updateSize();
     // TODO: implement build
     return Scaffold(
       body: Center(
@@ -52,31 +53,9 @@ class _ContinueRegistrationPageState extends State<ContinueRegistrationPage> {
                     node: FocusScopeNode(),
                     child: Column(
                       children: [
-                        TextFormField(
-                          controller: _nameController.controller,
-                          validator: _nameController.validator,
-                          decoration: InputDecoration(
-                            labelText: 'Nome',
-                            errorText: _nameController.errorMessage
-                          ),
-                        ),
-                        TextFormField(
-                          controller: _surnameController.controller,
-                          validator: _surnameController.validator,
-                          decoration: InputDecoration(
-                            labelText: 'Cognome',
-                            errorText: _surnameController.errorMessage
-                          ),
-                        ),
-                        TextFormField(
-                          controller: _medicodeController.controller,
-                          validator: _medicodeController.validator,
-                          obscureText: true,
-                          decoration: InputDecoration(
-                            labelText: 'MediCode',
-                            errorText: _medicodeController.errorMessage
-                          ),
-                        ),
+                        FormFieldWidget(label: "Nome", fieldController: _nameController,),
+                        FormFieldWidget(label: "Cognome", fieldController: _surnameController,),
+                        FormFieldWidget(label: "MediCode", fieldController: _medicodeController,),
                       ],
                     ),
                   ),

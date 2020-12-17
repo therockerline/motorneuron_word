@@ -1,10 +1,15 @@
+import 'dart:ui';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_brand_icons/flutter_brand_icons.dart';
+import 'package:neuron_word/components/form_field_widget.dart';
 import 'package:neuron_word/controller/auth.dart';
 import 'package:neuron_word/controller/hardware/display.dart';
 import 'package:neuron_word/controller/helper.dart';
 import 'package:neuron_word/pages/routes.dart';
+
+import '../../environment.dart';
 
 class LoginPage extends StatefulWidget {
   LoginPage({Key key}) : super(key: key);
@@ -21,6 +26,7 @@ class _LoginPageState extends State<LoginPage> {
   final FieldController _pswController = FieldController.build(maxLength: 30, minLength: 4);
 
   String messageError;
+  int errors = 0;
   @override
   void initState() {
     super.initState();
@@ -34,75 +40,78 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    Display.updateSize(size: MediaQuery.of(context).size);
+    Display.updateSize();
+    double height =(Display.vh * 60) + (errors * 125);
     return Scaffold(
       body: Center(
-        child: Padding(
-          padding: const EdgeInsets.only(top: 10.0),
+        child: Card(
+          //color: Colors.blueGrey.withOpacity(0.05),
+          clipBehavior: Clip.antiAlias,
           child: Container(
-            width: Display.vw * 80,
+            padding: EdgeInsets.all(32.0),
+            //width: Display.vw * 40,
+            //height: height,
             child: Column(
               children: [
-                Form(
-                  key: _formKey,
-                  child: FocusScope(
-                    node: FocusScopeNode(),
-                    child: Column(
-                      children: [
-                        TextFormField(
-                          controller: _emailController.controller,
-                          validator: _emailController.validator,
-                          decoration: InputDecoration(
-                            labelText: 'Email',
-                            errorText: _emailController.errorMessage
-                          ),
-                        ),
-                        TextFormField(
-                          controller: _pswController.controller,
-                          validator: _pswController.validator,
-                          obscureText: true,
-                          decoration: InputDecoration(
-                            labelText: 'Password',
-                            errorText: _pswController.errorMessage
-                          ),
-                        ),
-                      ],
+                ListTile(
+                  leading: Icon(Icons.shield),
+                  title: Text("$APP_NAME $errors"),
+                  subtitle: const Text("Inserisci le tue credenziali di accesso o registra un nuovo account"),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Form(
+                    key: _formKey,
+                    child: FocusScope(
+                      node: FocusScopeNode(),
+                      child: Column(
+                        children: [
+                          FormFieldWidget(label: "Username", fieldController: _emailController,),
+                          FormFieldWidget(label: "Password",fieldController: _pswController, obscuredText: true,),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              RaisedButton(
+                                onPressed: () { _login(); },
+                                elevation: 2,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text("Login"),
+                                ),
+                              ),
+                              FlatButton(
+                                onPressed: () {_registration(); },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text("Usa queste credenziali\nper registrarti", textAlign: TextAlign.center,),
+                                ),
+                              )
+                            ],
+                          )
+                        ],
+                      ),
                     ),
                   ),
                 ),
+                if(messageError != null)
+                  Text(messageError,style: TextStyle(color: Colors.red), textAlign: TextAlign.center,),
+                Spacer(flex: 2,),
+                Text("Oppure utilizza uno dei seguenti metodi per accedere", textAlign: TextAlign.center,),
                 Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.only(top: 32.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      RaisedButton(
-                        onPressed: () { _login(); },
-                        child: Text("login"),
-                      ),
-                      FlatButton(
-                        onPressed: () {_registration(); },
-                        child: Text("registrati"),
+                      IconButton(
+                        iconSize: 35,
+                        icon: Icon(BrandIcons.google),
+                        onPressed: () {
+                          _loginWithGoogle();
+                        },
                       )
                     ],
                   ),
                 ),
-                if(messageError != null)
-                  Text(messageError),
-                Spacer(),
-                Text("Oppure utilizza uno dei seguenti metodi per accedere"),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    IconButton(
-                      iconSize: 35,
-                      icon: Icon(BrandIcons.google),
-                      onPressed: () {
-                        _loginWithGoogle();
-                      },
-                    )
-                  ],
-                ),
-                Spacer(flex:2),
               ],
             ),
           ),
@@ -228,6 +237,9 @@ class _LoginPageState extends State<LoginPage> {
       _emailController.errorMessage = null;
     });
     bool isValid = _formKey.currentState.validate();
+    setState(() {
+      errors = (_pswController.errorMessage != null ? 1: 0 ) + (_emailController.errorMessage != null ? 1: 0) +  (messageError != null ? 1: 0 );
+    });
     if(!isValid) {
       throw("Error on validation");
     }

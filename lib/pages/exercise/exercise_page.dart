@@ -110,7 +110,7 @@ class _ExercisePageState extends State<ExercisePage> {
           filename: "Step_${step+1}(${exercises[step].type})",
           data: bytes,
           url: url,
-          mimeType: WebcamRecorder.mimeType,
+          mimeType: "${WebcamRecorder.videoType};${WebcamRecorder.codecType}",
           extension: WebcamRecorder.extension
         );
       });

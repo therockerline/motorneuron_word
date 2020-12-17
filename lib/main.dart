@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 
 import 'controller/hardware/display.dart';
 import 'controller/network.dart';
+import 'environment.dart';
 
 Future<void> main() async {
   runApp(
@@ -39,7 +40,7 @@ class App extends StatelessWidget {
           Database();
           Auth();
           return MaterialApp(
-            title: 'Neuron Word',
+            title: APP_NAME,
             theme: ThemeData(
               primarySwatch: Colors.blue,
             ),

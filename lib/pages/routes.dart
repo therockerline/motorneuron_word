@@ -2,6 +2,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:neuron_word/controller/hardware/display.dart';
 import 'package:neuron_word/pages/account/account_page.dart';
 import 'package:neuron_word/pages/account/settings/settings_page.dart';
 import 'package:neuron_word/pages/continueRegistration/continue_registration.dart';
@@ -36,6 +37,7 @@ class Routes {
     currentRoute = pageName;
     return MaterialPageRoute(builder: (context) {
       print(["gotopage",pageName]);
+      Display.context = context;
       return getRoutes()[pageName](context);
     });
   }

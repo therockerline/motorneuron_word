@@ -8,12 +8,28 @@ enum WebcamEvent {
 }
 
 class WebcamRecorder{
-  static String mimeType = "video/webm";
-  static String extension = '.webm';
+  List<String> mimeTypes = [
+    "webm",
+    "mpeg"
+  ];
+
+  List<String> codecs = [
+    "h264",
+    "vp9",
+    "opus",
+    "vp8",
+    "daala",
+  ];
+
+  static String videoType;
+  static String codecType;
+  static String extension;
   MediaRecorder _videoRecorder;
   Map<dynamic, dynamic> _mediaRecorderOption = {
-    "mimeType": "$mimeType;codecs=h264,vp9,opus",
-    "bitPerSecond": 2500000
+    "mimeType": null,
+    //"bitPerSecond": 2500000
+    //audioBitsPerSecond: 128000,
+    //videoBitsPerSecond: 2500000,
   };
   WebcamEvent state;
   Future<void> Function(Blob) _onDataAvailable;
@@ -24,38 +40,59 @@ class WebcamRecorder{
   WebcamRecorder();
 
   void init(MediaStream stream, VideoElement webcamVideoElement){
-    _videoRecorder = new MediaRecorder(stream, _mediaRecorderOption);
-    _videoRecorder.addEventListener('dataavailable', (dataBlob) async {
-      if(_onDataAvailable!= null) {
-        BlobEvent be = (dataBlob as BlobEvent);
-        await _onDataAvailable(be.data);
+    for (String _videoType in mimeTypes) {
+      for(String _codecType in codecs){
+        var type = "video/$_videoType;codecs=$_codecType";
+        if(MediaRecorder.isTypeSupported(type)){
+          videoType ="video/$_videoType";
+          codecType ="codecs=$_codecType";
+          extension=".$videoType";
+          _mediaRecorderOption["mimeType"] = type;
+          break;
+        }
       }
-      _isBusy = false;
-    });
-    _recorderStreamSubscription = _recorderStreamController.stream;
-    _recorderStreamSubscription.listen((WebcamEvent event) {
-      state = event;
-      switch(event){
-        case WebcamEvent.startRec:
-          if(webcamVideoElement.srcObject.active) {
-            _videoRecorder.start();
-          }
-          break;
-        case WebcamEvent.stopRec:
-          print(_videoRecorder.state);
-          if(_videoRecorder.state !='inactive') {
-            _videoRecorder.stop();
-          }
-          break;
-        case WebcamEvent.pauseRec:
-          print(["onDataAvailable(video)!=null",_onDataAvailable!=null, webcamVideoElement.srcObject.active]);
-          if(_videoRecorder.state !='inactive') {
-            //webcamVideoElement.pause();
-            _videoRecorder.stop();
-          }
-          break;
-      }
-    });
+    }
+    if(_mediaRecorderOption["mimeType"] == null){
+      throw("NO SUPPORTED TYPE");
+    }else {
+      print(["MEDIA_RECORDER_OPTIONS", _mediaRecorderOption]);
+      _videoRecorder = new MediaRecorder(stream, _mediaRecorderOption);
+      _videoRecorder.addEventListener('dataavailable', (dataBlob) async {
+        if (_onDataAvailable != null) {
+          BlobEvent be = (dataBlob as BlobEvent);
+          await _onDataAvailable(be.data);
+        }
+        _isBusy = false;
+      });
+      _recorderStreamSubscription = _recorderStreamController.stream;
+      _recorderStreamSubscription.listen((WebcamEvent event) {
+        state = event;
+        switch (event) {
+          case WebcamEvent.startRec:
+            if (webcamVideoElement.srcObject.active) {
+              _videoRecorder.start();
+            }
+            break;
+          case WebcamEvent.stopRec:
+            print(_videoRecorder.state);
+            if (_videoRecorder.state != 'inactive') {
+              _videoRecorder.stop();
+            }
+            break;
+          case WebcamEvent.pauseRec:
+            print([
+              "onDataAvailable(video)!=null",
+              _onDataAvailable != null,
+              webcamVideoElement.srcObject.active
+            ]);
+            if (_videoRecorder.state != 'inactive') {
+              //webcamVideoElement.pause();
+              _videoRecorder.stop();
+            }
+            break;
+        }
+      });
+    }
   }
 
   void onDataAvailable(Future<void> Function(Blob) onDataAvailable) {
