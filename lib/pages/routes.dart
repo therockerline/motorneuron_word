@@ -2,6 +2,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:neuron_word/controller/auth.dart';
 import 'package:neuron_word/controller/hardware/display.dart';
 import 'package:neuron_word/pages/account/account_page.dart';
 import 'package:neuron_word/pages/account/settings/settings_page.dart';
@@ -24,10 +25,9 @@ class Routes {
   static String currentRoute;
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings){
-    print(["page",settings]);
+    print(["page",settings.name, "user", FirebaseAuth.instance.currentUser]);
     String pageName = settings.name;
     if(FirebaseAuth.instance.currentUser != null) {
-      //Auth.getUserData(FirebaseAuth.instance.currentUser);
       if (pageName == Routes.Login || pageName == '/' || pageName == '') {
         pageName = Routes.Exercise;
       }
@@ -36,9 +36,13 @@ class Routes {
     }
     currentRoute = pageName;
     return MaterialPageRoute(builder: (context) {
-      print(["gotopage",pageName]);
-      Display.context = context;
-      return getRoutes()[pageName](context);
+      print(["onGenerateRoute build",pageName]);
+      Map<String, WidgetBuilder> routes = getRoutes();
+      if(routes.keys.contains(pageName)) {
+        print(routes[pageName]);
+        return routes[pageName](context);
+      }
+      return routes["404"](context);
     });
   }
 
@@ -52,6 +56,9 @@ class Routes {
       Routes.Account: (context) => AccountPage(),
       Routes.Sessions: (context) => SessionsPage(),
       Routes.ContinueRegistration: (context) => ContinueRegistrationPage(),
+      "404": (context) => Container(
+        child: Text("Pagina non trovata"),
+      ),
     };
   }
 }

@@ -4,11 +4,9 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
 class WebcamViewer extends StatefulWidget {
-  final double height;
-  final double width;
   final Key webcamKey;
   final Function(MediaStream, VideoElement) onStreamAvailable;
-  WebcamViewer({Key key, @required this.webcamKey, this.height, this.width, this.onStreamAvailable}) : super(key: key);
+  WebcamViewer({Key key, @required this.webcamKey, this.onStreamAvailable}) : super(key: key);
 
   @override
   _WebcamViewerState createState() {
@@ -37,21 +35,20 @@ class _WebcamViewerState extends State<WebcamViewer> {
     webcamWidget = HtmlElementView(key: widget.webcamKey, viewType: 'webcamVideoElement');
     var videoOption = {
       "facingMode": 'user',
-      "width": widget.width ?? 1280,
-      "height": widget.height ?? 720,
+      //"width": 720,
+      //"height": 1280,
     };
     print(videoOption);
     // Access the webcam stream
     window.navigator.getUserMedia(
         video: videoOption,
         audio: true
-    ).then((MediaStream stream) {
-      _webcamVideoElement.srcObject = stream;
-      _webcamVideoElement.setAttribute("style", "object-fit: cover; filter: blur(7px) saturate(0.05);");
-      if (widget.onStreamAvailable != null)
-        widget.onStreamAvailable(stream, _webcamVideoElement);
+      ).then((MediaStream stream) {
+        _webcamVideoElement.srcObject = stream;
+        _webcamVideoElement.setAttribute("style", "object-fit: cover; filter: blur(5px) saturate(0.05); width:100%; height:100%;");
+        if (widget.onStreamAvailable != null)
+          widget.onStreamAvailable(stream, _webcamVideoElement);
     });
-
   }
 
   @override
@@ -62,11 +59,10 @@ class _WebcamViewerState extends State<WebcamViewer> {
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    return Container(
-      width: widget.width ?? null,
-      height: widget.height ?? null,
+    return Expanded(
+      //width: widget.width ?? null,
+      //height: widget.height ?? null,
       child: webcamWidget,
-      color: Colors.black,
     );
   }
 }

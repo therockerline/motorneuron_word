@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:neuron_word/controller/auth.dart';
@@ -39,20 +40,87 @@ class App extends StatelessWidget {
           Network();
           Database();
           Auth();
-          return MaterialApp(
-            title: APP_NAME,
-            theme: ThemeData(
-              primarySwatch: Colors.blue,
-            ),
-            routes: Routes.getRoutes(),
-            //initialRoute: Routes.Login,
-            onGenerateRoute: Routes.onGenerateRoute,
-
-            //home: LoginPage(),
+          return FutureBuilder(
+            future: Auth.awaitListener(),
+            builder: (context, listenerSnapshot) {
+              if(listenerSnapshot.hasError)
+                return Container(child: Text("ERROR initialization"));
+              if(listenerSnapshot.connectionState == ConnectionState.done) {
+                return MaterialApp(
+                  title: APP_NAME,
+                  /*theme: ThemeData(
+                    primarySwatch: Colors.blue,
+                  ),*/
+                  onGenerateRoute: Routes.onGenerateRoute,
+                );
+              }
+              return showLoader();
+            },
           );
         }
-        return CircularProgressIndicator();
+        return showLoader();
       },
     );
   }
+
+  showLoader(){
+    return Center(
+      child: Container(
+        width: 50,
+        height: 50,
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
 }
+
+/*
+class MyNav extends NavigatorObserver{
+
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic> previousRoute) {
+    print(["didPush", route.settings]);
+    super.didPush(validate(route.settings), previousRoute);
+  }
+
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic> previousRoute) {
+    print("didPop");
+    super.didPop(validate(route.settings), previousRoute);
+  }
+
+  @override
+  void didReplace({Route<dynamic> newRoute, Route<dynamic> oldRoute}) {
+    print("didReplace");
+    super.didReplace(newRoute: validate(newRoute.settings), oldRoute: oldRoute);
+  }
+
+  @override
+  void didRemove(Route<dynamic> route, Route<dynamic> previousRoute) {
+    print("didRemove");
+    super.didRemove(validate(route.settings), previousRoute);
+  }
+
+  Route<dynamic> validate(RouteSettings settings){
+    String pageName = settings.name;
+    print(["try",pageName, FirebaseAuth.instance.currentUser ]);
+    if(FirebaseAuth.instance.currentUser != null) {
+      if (pageName == Routes.Login || pageName == '/' || pageName == '') {
+        pageName = Routes.Exercise;
+      }
+    }else{
+      pageName = Routes.Login;
+    }
+    print(["gotopage",pageName]);
+    return MaterialPageRoute(builder: (context) {
+      print(["build",pageName]);
+      Map<String, WidgetBuilder> routes = Routes.getRoutes();
+      if(routes.keys.contains(pageName)) {
+        print(routes[pageName]);
+        return routes[pageName](context);
+      }
+      return routes["404"](context);
+    });
+  }
+}
+*/

@@ -14,10 +14,11 @@ class WebcamRecorder{
   ];
 
   List<String> codecs = [
+    "h265"
     "h264",
     "vp9",
-    "opus",
     "vp8",
+    "opus",
     "daala",
   ];
 
@@ -28,8 +29,6 @@ class WebcamRecorder{
   Map<dynamic, dynamic> _mediaRecorderOption = {
     "mimeType": null,
     //"bitPerSecond": 2500000
-    //audioBitsPerSecond: 128000,
-    //videoBitsPerSecond: 2500000,
   };
   WebcamEvent state;
   Future<void> Function(Blob) _onDataAvailable;
@@ -40,8 +39,8 @@ class WebcamRecorder{
   WebcamRecorder();
 
   void init(MediaStream stream, VideoElement webcamVideoElement){
-    for (String _videoType in mimeTypes) {
-      for(String _codecType in codecs){
+    for(String _videoType in mimeTypes){
+      for (String _codecType in codecs) {
         var type = "video/$_videoType;codecs=$_codecType";
         if(MediaRecorder.isTypeSupported(type)){
           videoType ="video/$_videoType";

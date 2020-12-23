@@ -37,7 +37,7 @@ class _ContinueRegistrationPageState extends State<ContinueRegistrationPage> {
 
   @override
   Widget build(BuildContext context) {
-    Display.updateSize();
+    Display.updateSize(context);
     // TODO: implement build
     return Scaffold(
       body: Center(

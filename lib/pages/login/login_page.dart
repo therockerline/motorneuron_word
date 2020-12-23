@@ -40,7 +40,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    Display.updateSize();
+    Display.updateSize(context);
     double height =(Display.vh * 60) + (errors * 125);
     return Scaffold(
       body: Center(
@@ -55,7 +55,7 @@ class _LoginPageState extends State<LoginPage> {
               children: [
                 ListTile(
                   leading: Icon(Icons.shield),
-                  title: Text("$APP_NAME $errors"),
+                  title: Text("$APP_NAME"),
                   subtitle: const Text("Inserisci le tue credenziali di accesso o registra un nuovo account"),
                 ),
                 Padding(

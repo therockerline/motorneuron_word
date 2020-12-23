@@ -3,7 +3,6 @@ import 'dart:html';
 import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:neuron_word/components/drawer.dart';
@@ -77,29 +76,17 @@ class _ExercisePageState extends State<ExercisePage> {
     super.initState();
     webAudioPlayer  = WebAudioPlayer();
     webcamRecorder  = WebcamRecorder();
-    vh = Display.vh;
-    vw = Display.vw;
     _exerciseProvider = Provider.of<ExerciseProvider>(context, listen: false);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await Auth.getUser();
-      setState(() {
-        _userName = "${Auth.user?.name} ${Auth.user?.surname}";
-        webcamViewer = WebcamViewer(webcamKey: webcamKey, onStreamAvailable: (stream, webcamVideoElement) {
-          print("stream attached");
-          setState(() {
-            _isBusy = false;
-          });
-          webcamRecorder.init(stream, webcamVideoElement);
-          //avvio il video
-          if(webcamVideoElement.srcObject.active)
-            webcamVideoElement.play();
-        },
-          width: vw * 100,
-          height: vh * 100,
-        );
-      });
       print("sono pronto");
+      Display.updateSize(context);
+      vh = Display.vh;
+      vw = Display.vw;
+      await Auth.getUser();
+      print("ciao");
+      print(_exerciseProvider);
       exercises = await _exerciseProvider.getExercises();
+      print(["Exercises", exercises.length]);
       //l'evento si scatena quando il video viene messo in pausa
       webcamRecorder.onDataAvailable((Blob blob) async {
         print(["save video file", step]);
@@ -114,7 +101,20 @@ class _ExercisePageState extends State<ExercisePage> {
           extension: WebcamRecorder.extension
         );
       });
-      newSession();
+      setState(() {
+        newSession();
+        _userName = "${Auth.user?.name} ${Auth.user?.surname}";
+        webcamViewer = WebcamViewer(webcamKey: webcamKey, onStreamAvailable: (stream, webcamVideoElement) {
+          print("stream attached");
+          setState(() {
+            _isBusy = false;
+          });
+          webcamRecorder.init(stream, webcamVideoElement);
+          //avvio il video
+          if(webcamVideoElement.srcObject.active)
+            webcamVideoElement.play();
+        });
+      });
     });
   }
 
@@ -131,6 +131,9 @@ class _ExercisePageState extends State<ExercisePage> {
 
   @override
   Widget build(BuildContext context) {
+    Display.updateSize(context);
+    vh = Display.vh;
+    vw = Display.vw;
     Widget result = Container();
     String titleText = "Benvenuto\nPremi il tasto play per iniziare";
     Color textColor = Colors.white;
@@ -156,7 +159,9 @@ class _ExercisePageState extends State<ExercisePage> {
         case ExerciseStates.completed:
           if (step == exercises.length) {
             titleText = "Fine della sessione\nPremi il tasto in basso per\niniziarne una nuova";
-            result = getButton(newSession, Icons.replay);
+            result = getButton(() {
+              setState(newSession);
+            }, Icons.replay);
           }else {
             titleText = "${exercises[step].type}";
             result = getButton(startExercise, Icons.play_arrow);
@@ -166,6 +171,9 @@ class _ExercisePageState extends State<ExercisePage> {
     }
     bool showComponent = state != ExerciseStates.awaiting && step < exercises.length;
 
+    /*if(Display.isLandscape()){
+      return Text("Gira il dispositivo");
+    }*/
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -187,6 +195,7 @@ class _ExercisePageState extends State<ExercisePage> {
       body: Center(
         child: Container(
           width: vw*100,
+          color: Colors.black,
           child: Stack(
             alignment: Alignment.center,
             fit: StackFit.loose,
@@ -322,11 +331,9 @@ class _ExercisePageState extends State<ExercisePage> {
       element.videoFile = null;
       element.executionTime = null;
     });
-    setState(() {
-      step = 0;
-      isStarted = false;
-      state = ExerciseStates.awaiting;
-    });
+    step = 0;
+    isStarted = false;
+    state = ExerciseStates.awaiting;
   }
 
   void startExercise() {
@@ -548,7 +555,7 @@ class _ExercisePageState extends State<ExercisePage> {
     timer?.cancel();
     _isBusy = false;
     webcamRecorder.stopRec();
-    newSession();
+    setState(newSession);
   }
 
 
